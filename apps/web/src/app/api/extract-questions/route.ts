@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
-import { Question } from '@/types/assessment';
+import { Question } from '@vedaai/types';
 
 // Initialize the Gemini client
 // Ensure GEMINI_API_KEY is set in your .env.local file

@@ -4,7 +4,7 @@ import { TopHeader } from '@/components/layout/TopHeader';
 import { MobileHeader } from '@/components/layout/MobileHeader';
 import { QuestionList } from '@/components/mapping/QuestionList';
 import { mockData } from '@/lib/mockData';
-import { AssessmentResult } from '@/types/assessment';
+import { AssessmentResult } from '@vedaai/types';
 import dynamic from 'next/dynamic';
 
 const AnswerViewer = dynamic(

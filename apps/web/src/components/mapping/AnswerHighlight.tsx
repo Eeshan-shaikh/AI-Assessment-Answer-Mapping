@@ -1,4 +1,4 @@
-import { AnswerRegion } from '@/types/assessment';
+import { AnswerRegion } from '@vedaai/types';
 
 interface AnswerHighlightProps {
   region: AnswerRegion;

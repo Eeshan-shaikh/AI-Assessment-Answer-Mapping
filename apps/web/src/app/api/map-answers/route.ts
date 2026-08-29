@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
-import { AnswerMapping, Question, Answer } from '@/types/assessment';
+import { AnswerMapping, Question, Answer } from '@vedaai/types';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -27,7 +27,33 @@ export async function POST(req: NextRequest) {
 
     let mappings: AnswerMapping[] = [];
     let unmatchedQuestions = [...questions];
-    let unmatchedAnswers = [...answers];
+    
+    // Merge answers with the same normalized label
+    const mergedAnswers: Answer[] = [];
+    const labelMap = new Map<string, Answer>();
+    
+    for (const ans of answers) {
+      if (ans.detectedQuestionLabel) {
+        const norm = normalizeLabel(ans.detectedQuestionLabel);
+        if (norm) {
+          if (labelMap.has(norm)) {
+            const existing = labelMap.get(norm)!;
+            existing.regions = [...existing.regions, ...ans.regions];
+            existing.pages = Array.from(new Set([...existing.pages, ...ans.pages]));
+            existing.text = existing.text + "\\n" + ans.text;
+            continue;
+          } else {
+            const newAns = { ...ans, regions: [...ans.regions], pages: [...ans.pages] };
+            labelMap.set(norm, newAns);
+            continue;
+          }
+        }
+      }
+      mergedAnswers.push(ans);
+    }
+    labelMap.forEach(ans => mergedAnswers.push(ans));
+    
+    let unmatchedAnswers = [...mergedAnswers];
 
     // Priority 1 & 2: Explicit and Normalized Label Matching
     for (let i = unmatchedAnswers.length - 1; i >= 0; i--) {

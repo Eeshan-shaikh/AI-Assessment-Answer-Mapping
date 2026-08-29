@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
                 type: 'OBJECT',
                 properties: {
                   id: { type: 'STRING' },
-                  questionLabel: { type: 'STRING' },
+                  detectedQuestionLabel: { type: 'STRING' },
                   pages: {
                     type: 'ARRAY',
                     items: { type: 'INTEGER' }
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
                     }
                   }
                 },
-                required: ['id', 'questionLabel', 'pages', 'regions']
+                required: ['id', 'detectedQuestionLabel', 'pages', 'regions']
               }
             }
           },

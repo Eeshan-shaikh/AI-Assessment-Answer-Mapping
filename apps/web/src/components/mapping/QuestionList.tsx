@@ -1,4 +1,4 @@
-import { AssessmentResult } from '@/types/assessment';
+import { AssessmentResult } from '@vedaai/types';
 import { QuestionItem } from './QuestionItem';
 
 interface QuestionListProps {

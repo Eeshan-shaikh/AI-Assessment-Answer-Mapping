@@ -1,62 +1,99 @@
-# VedaAI 🎓
+# VedaAI
 
-VedaAI is an intelligent, production-ready web application designed for educators. It automates the tedious process of cross-referencing a student's handwritten answer sheet against a printed question paper using advanced AI and Computer Vision via Google's Gemini 3.5 Flash model.
+VedaAI is an intelligent assessment mapping application built to easily extract questions and answers from PDFs or images, align them intuitively in a unified interface, and automatically cross-reference content using cutting-edge Generative AI models.
 
-## ✨ Features
+## Architecture
 
-* **Intelligent Document Parsing**: Upload a Question Paper and an Answer Sheet (supports Images and PDFs).
-* **AI-Powered OCR**: Automatically extracts questions, marks, handwritten student answers, and precise physical bounding box coordinates on the page.
-* **Deterministic & Semantic Mapping**: 
-  * Automatically maps student answers to their respective questions using explicit label matching (e.g., "11(a)").
-  * Falls back to Gemini's semantic understanding to correctly map unlabeled or messy handwritten answers to the most logically appropriate question.
-* **Interactive UI**: A sleek, modern two-pane interface where clicking a question automatically navigates to and draws a green highlight box precisely over the student's handwritten answer on the uploaded document.
-* **Native PDF Rendering**: Integrated with `react-pdf` to flawlessly render multi-page PDF documents natively on the canvas for accurate physical highlighting.
+This project is built as a **Monorepo** using npm workspaces. 
+This structure allows us to cleanly separate our application logic from shared generic packages, preventing circular dependencies and allowing the codebase to scale seamlessly.
 
-## 🚀 Tech Stack
+- **`apps/web`**: The core Next.js web application containing the user interface, PDF rendering (`react-pdf`), mapping UI components, and the backend extraction logic API Routes.
+- **`packages/types`**: Shared TypeScript definitions across the workspace (e.g. Assessment Types, Question/Answer interfaces).
 
-* **Frontend**: Next.js 16 (App Router), React, Tailwind CSS, Lucide React
-* **Backend**: Next.js Serverless Route Handlers (`/api`)
-* **AI Engine**: Google GenAI SDK (`@google/genai`) using `gemini-3.5-flash` for high-speed multimodal reasoning.
-* **Document Viewer**: `react-pdf` for robust frontend PDF rendering.
+### Technology Stack
+- **Framework**: Next.js 14+ (App Router)
+- **Styling**: Tailwind CSS
+- **AI Integration**: `@google/genai` (Official Google Gen AI SDK) 
+- **AI Models Used**: `gemini-3.5-flash` for high-speed multimodal OCR extraction and semantic mapping.
+- **PDF Rendering**: `react-pdf` for robust frontend document rendering.
+- **Package Manager**: npm workspaces
 
-## 🛠️ Local Development Setup
+---
 
-To run VedaAI locally on your machine, follow these steps:
+## Important Architectural Flows
 
-### 1. Prerequisites
-* Node.js 18+ installed.
-* A valid Google Gemini API Key (You can get one from Google AI Studio).
+1. **Extraction Pipeline (`/api/extract-*`)**: 
+   When a user uploads a Question Paper and an Answer Sheet, the files are passed to `gemini-3.5-flash` via the Next.js API route. The AI model extracts the text, physical bounding box locations on the page (normalized coordinates), and semantic meaning.
+2. **Mapping Pipeline (`/api/map-answers`)**:
+   Answers and questions are cross-referenced in a two-stage process:
+   - **Explicit Matching**: Normalizes question labels (e.g. "Q. 11(a)" vs "11a") and maps exact matches directly.
+   - **Semantic Matching**: For any remaining unanswered/unmapped questions, a prompt is sent back to `gemini-3.5-flash` to map them based purely on their textual similarity and context.
+3. **Frontend Rendering (`AnswerViewer.tsx`)**:
+   The frontend translates the normalized bounding boxes returned by the AI into absolute DOM coordinates based on standard A4 scaling (800x1131), and overlays interactive highlight components on top of the `react-pdf` canvas.
 
-### 2. Installation
-Clone the repository and install dependencies:
+---
+
+## Prerequisites
+
+- **Node.js**: >= 20.0.0
+- **npm**: >= 10.0.0 (Supports Workspaces natively)
+- **API Key**: You will need a valid Google Gemini API Key that has access to the `gemini-3.5-flash` model. 
+
+---
+
+## Getting Started Locally
+
+1. **Clone and Install dependencies**
+   Run the following from the root of the repository:
+   ```bash
+   npm install
+   ```
+   *(Note: Do not install dependencies from inside `apps/web`. NPM workspaces will link the dependencies automatically from the root).*
+
+2. **Configure your Environment Variables**
+   Create an `.env.local` file inside the Next.js application directory (`apps/web/.env.local`) and add your Google Gemini API key:
+   ```env
+   GEMINI_API_KEY=your_api_key_here
+   ```
+
+3. **Run the Development Server**
+   Start the Next.js application in development mode from the root directory:
+   ```bash
+   npm run dev
+   ```
+   The application will be available at [http://localhost:3000](http://localhost:3000).
+
+---
+
+## Building for Production
+
+To build the application for production, run from the root:
 ```bash
-npm install
+npm run build
 ```
+*(This command is configured to correctly run the Webpack-based build inside `apps/web`, circumventing any Windows native SWC binding issues).*
 
-### 3. Environment Variables
-Create a `.env.local` file in the root of the project and add your Gemini API Key:
-```env
-GEMINI_API_KEY=your_gemini_api_key_here
-```
-
-### 4. Start the Server
-Run the development server:
+To start the production server locally:
 ```bash
-npm run dev
+npm run start
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-## 🌍 Deploying to Vercel
+---
 
-VedaAI is completely serverless and can be hosted for free on Vercel.
+## Deployment (Vercel)
 
-1. **Push your code to GitHub.**
-2. Go to [Vercel](https://vercel.com/) and create a **New Project**.
-3. Import your GitHub repository.
-4. **Important**: Before clicking Deploy, expand the **Environment Variables** section and add:
-   * **Name**: `GEMINI_API_KEY`
-   * **Value**: Your actual Gemini API Key
-5. Click **Deploy**. Vercel will automatically build the Next.js app and provide you with a live, production-ready URL!
+This repository is optimized for deployment on Vercel out of the box. 
 
-## 📜 License
-This project is licensed under the MIT License.
+1. Push your codebase to a GitHub repository.
+2. In the Vercel dashboard, click **Add New... > Project** and import the repository.
+3. Vercel automatically detects Monorepos. 
+   - You can leave the **Root Directory** as the default repository root (`./`).
+   - The root `package.json` correctly aliases Vercel's standard `build` and `start` commands to the `web` workspace automatically.
+4. **Environment Variables**: Add your `GEMINI_API_KEY` to Vercel's Environment Variables in the project settings.
+5. Click **Deploy**. Vercel will handle the rest!
+
+## Additional Commands
+
+You can run commands specifically for individual workspaces by using the `-w` flag:
+- `npm run dev -w web` (Start dev server just for web)
+- `npm run lint -w web` (Run Next.js linter)

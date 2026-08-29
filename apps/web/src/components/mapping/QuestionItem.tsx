@@ -1,4 +1,4 @@
-import { Question } from '@/types/assessment';
+import { Question } from '@vedaai/types';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface QuestionItemProps {

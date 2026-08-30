@@ -11,9 +11,7 @@ function normalizeLabel(label: string | null | undefined): string {
   return label
     .toLowerCase()
     .replace(/^q\.?\s*/, '') // Remove leading Q or Q.
-    .replace(/\s+/g, '') // Remove spaces
-    .replace(/-/g, '') // Remove dashes
-    .trim();
+    .replace(/[^a-z0-9]/g, ''); // Remove EVERYTHING that is not a letter or number (dots, parens, spaces, dashes)
 }
 
 export async function POST(req: NextRequest) {

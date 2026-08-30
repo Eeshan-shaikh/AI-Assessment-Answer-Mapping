@@ -21,7 +21,7 @@ export function Sidebar() {
           <div className="bg-gray-900 text-white p-1.5 rounded-md">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m3 15 2 2 4-4"/></svg>
           </div>
-          <span className="text-xl font-bold tracking-tight">VedaAI</span>
+          <span className="text-xl font-bold tracking-tight text-gray-900">VedaAI</span>
         </div>
 
         <button className="w-full bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-full py-2.5 px-4 flex items-center justify-center gap-2 text-sm font-medium mb-8 hover:opacity-90 transition-opacity">

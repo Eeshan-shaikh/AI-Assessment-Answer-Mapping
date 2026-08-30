@@ -11,13 +11,24 @@ interface QuestionItemProps {
 export function QuestionItem({ question, status, isSelected, onClick }: QuestionItemProps) {
   // Determine colors based on status and selection
   // Figma styling: selected is orange circle, unselected is gray circle
-  const circleClass = isSelected 
+    const circleClass = isSelected 
     ? 'bg-orange-500 text-white' 
     : 'bg-gray-200 text-gray-700';
 
   const cardBorderClass = isSelected 
     ? 'border-orange-400 shadow-sm' 
     : 'border-transparent hover:border-gray-200';
+
+  let marks = 2;
+  let markColor = "text-green-600 bg-green-50";
+  
+  if (status === 'unanswered') {
+    marks = 0;
+    markColor = "text-red-600 bg-red-50";
+  } else if (status === 'uncertain' || status === 'unmatched') {
+    marks = 1;
+    markColor = "text-yellow-600 bg-yellow-50";
+  }
 
   return (
     <div 
@@ -39,8 +50,7 @@ export function QuestionItem({ question, status, isSelected, onClick }: Question
               {question.text}
             </p>
             <div className="flex items-center gap-2 shrink-0">
-              {/* Optional Grading - keeping it static for mockup */}
-              <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">2/2</span>
+              <span className={`text-xs font-bold px-2 py-1 rounded ${markColor}`}>{marks}/2</span>
               <button className="text-gray-400 hover:text-gray-600 p-1">
                 {isSelected ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>

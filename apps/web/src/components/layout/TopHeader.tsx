@@ -1,11 +1,18 @@
+'use client';
 import { ArrowLeft, HelpCircle, Bell, Sparkles } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export function TopHeader() {
+  const router = useRouter();
+
   return (
     <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-10">
       <div className="flex items-center gap-3">
-        <button className="p-1 hover:bg-gray-100 rounded-md transition-colors text-gray-500">
+        <button 
+          onClick={() => router.back()}
+          className="p-1 hover:bg-gray-100 rounded-md transition-colors text-gray-500"
+        >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-2 text-sm font-medium text-gray-400">

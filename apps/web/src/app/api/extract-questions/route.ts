@@ -51,54 +51,71 @@ export async function POST(req: NextRequest) {
     // Call Gemini API (Using gemini-1.5-flash for speed and multimodal capabilities)
     // Note: We use inline data here. For very large PDFs, the File API (upload) might be needed,
     // but for 1-2 page question papers, inline base64 is fine and faster.
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.5-flash',
-      contents: [
-        prompt,
-        {
-          inlineData: {
-            data: buffer.toString('base64'),
-            mimeType: mimeType,
-          },
-        },
-      ],
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: 'OBJECT',
-          properties: {
-            questions: {
-              type: 'ARRAY',
-              items: {
-                type: 'OBJECT',
-                properties: {
-                  id: { type: 'STRING' },
-                  number: { type: 'STRING' },
-                  text: { type: 'STRING' },
-                  marks: { type: 'NUMBER' },
-                  page: { type: 'INTEGER' },
-                  order: { type: 'INTEGER' },
-                  bbox: {
+    let response;
+    let retries = 2;
+    
+    while (retries >= 0) {
+      try {
+        response = await ai.models.generateContent({
+          model: 'gemini-3.5-flash',
+          contents: [
+            prompt,
+            {
+              inlineData: {
+                data: buffer.toString('base64'),
+                mimeType: mimeType,
+              },
+            },
+          ],
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: 'OBJECT',
+              properties: {
+                questions: {
+                  type: 'ARRAY',
+                  items: {
                     type: 'OBJECT',
                     properties: {
-                      ymin: { type: 'NUMBER' },
-                      xmin: { type: 'NUMBER' },
-                      ymax: { type: 'NUMBER' },
-                      xmax: { type: 'NUMBER' }
+                      id: { type: 'STRING' },
+                      number: { type: 'STRING' },
+                      text: { type: 'STRING' },
+                      marks: { type: 'NUMBER' },
+                      page: { type: 'INTEGER' },
+                      order: { type: 'INTEGER' },
+                      bbox: {
+                        type: 'OBJECT',
+                        properties: {
+                          ymin: { type: 'NUMBER' },
+                          xmin: { type: 'NUMBER' },
+                          ymax: { type: 'NUMBER' },
+                          xmax: { type: 'NUMBER' }
+                        },
+                        required: ['ymin', 'xmin', 'ymax', 'xmax']
+                      }
                     },
-                    required: ['ymin', 'xmin', 'ymax', 'xmax']
+                    required: ['id', 'number', 'text', 'page', 'order', 'bbox']
                   }
-                },
-                required: ['id', 'number', 'text', 'page', 'order', 'bbox']
-              }
+                }
+              },
+              required: ['questions']
             }
-          },
-          required: ['questions']
+          }
+        });
+        break; // Success, exit loop
+      } catch (err: any) {
+        // If it's a 503 Unavailable or Deadline Exceeded, retry
+        const isTimeout = err.message?.includes('503') || err.message?.includes('UNAVAILABLE') || err.message?.includes('Deadline');
+        if (retries === 0 || !isTimeout) {
+          throw err;
         }
+        console.warn(`Gemini API timeout, retrying... (${retries} attempts left)`);
+        await new Promise(resolve => setTimeout(resolve, 2000)); // wait 2 seconds
+        retries--;
       }
-    });
+    }
 
-    if (!response.text) {
+    if (!response || !response.text) {
       throw new Error("Failed to generate content");
     }
 
